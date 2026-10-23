@@ -1,0 +1,209 @@
+<div align="center">
+
+<img src="installer/mmagent-source.jpg" alt="MM Agent" width="420">
+
+# MM Agent
+
+**Your own AI assistant on Windows: a smart brain plus a chat interface, installed with one click.**
+Talk to it in your browser, on Telegram or on WhatsApp, using DeepSeek, OpenAI, Anthropic or Kimi.
+
+![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?logo=windows)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
+![Free](https://img.shields.io/badge/price-free-brightgreen)
+
+[**⬇ Download the latest installer**](../../releases/latest) · [Quick start](#-quick-start) · [Chat apps](#-chat-apps-telegram--whatsapp) · [Troubleshooting](#-troubleshooting)
+
+</div>
+
+---
+
+## ✨ What is MM Agent?
+
+MM Agent joins two well-known open-source AI projects into one easy app:
+
+| Part | Program | What it does |
+|---|---|---|
+| 🧠 **Brain** | [Hermes Agent](https://github.com/nousresearch/hermes-agent) (Nous Research) | Thinks and acts: talks to the AI model, remembers, learns skills, uses tools |
+| 💬 **Interface** | [OpenClaw](https://github.com/openclaw/openclaw) | Where you chat: a web chat page, Telegram, WhatsApp |
+
+```
+You ──► OpenClaw (chat page / Telegram / WhatsApp) ──► Hermes (brain) ──► DeepSeek / OpenAI / Anthropic / Kimi
+```
+
+Everything runs **on your own PC**. You bring your own API key, so there is no subscription and no middleman.
+
+### Features
+
+- **One-click installer**: installs Node.js, Hermes Agent and OpenClaw for you. No admin rights, no command line.
+- **Four AI providers**: DeepSeek, OpenAI, Anthropic (Claude) and Kimi (Moonshot). Switch any time.
+- **Your keys stay private**: API keys are encrypted with Windows' own protection (DPAPI) and only work for your Windows account on your PC.
+- **Chat anywhere**: browser chat page, Telegram bot and WhatsApp. Only people you approve can talk to it.
+- **Two control panels**: the OpenClaw chat page and the Hermes brain dashboard (sessions, skills, logs).
+- **Self-repairing setup**: detects and fixes common problems (half-finished updates, damaged settings, PATH issues).
+
+## 🚀 Quick start
+
+### Requirements
+
+- Windows 10 (22H2) or Windows 11, 64-bit
+- Internet connection (setup downloads several hundred MB the first time)
+- An API key from at least one AI provider:
+
+  | Provider | Get a key |
+  |---|---|
+  | DeepSeek (default, low cost) | https://platform.deepseek.com |
+  | OpenAI | https://platform.openai.com/api-keys |
+  | Anthropic (Claude) | https://console.anthropic.com |
+  | Kimi (Moonshot) | https://platform.moonshot.ai |
+
+### Install
+
+1. Download **`MM-Agent-Setup.exe`** from the [latest release](../../releases/latest).
+2. Double-click it. Windows may say **"Windows protected your PC"** because the installer isn't code-signed. Click **More info → Run anyway**.
+3. Click **Next → Install → Finish**. Leave **"Set up MM Agent now"** ticked.
+4. A setup window opens and installs everything. This takes **5–15 minutes**; leave the window open.
+5. When asked, **paste your API key(s)**. The input is hidden. Press Enter to skip a provider.
+6. Optionally connect **Telegram** and/or **WhatsApp** (you can also do it later).
+7. Press **Enter** to start. Your browser opens the chat page. 🎉
+
+## 🖥 Using MM Agent
+
+Everything is in **Start Menu → MM Agent**:
+
+| Shortcut | What it does |
+|---|---|
+| **Start MM Agent** | Starts everything and opens the chat page |
+| **Stop MM Agent** | Stops everything |
+| **Enter API Keys** | Add or change your API keys |
+| **Switch Model** | Choose which AI answers (DeepSeek, OpenAI, Anthropic, Kimi) |
+| **Connect Telegram / Connect WhatsApp** | Link a chat app |
+| **Approve Telegram / Approve WhatsApp** | Allow a person who messaged your bot |
+| **MM Agent Setup** | Re-run setup: updates and repairs everything |
+
+When MM Agent is running, two pages are available:
+
+| Page | Address | Use it for |
+|---|---|---|
+| **Chat (OpenClaw)** | http://127.0.0.1:18789/ | Everyday chat, the same assistant as on Telegram/WhatsApp |
+| **Brain panel (Hermes)** | http://127.0.0.1:9119/ | Hermes' own chat, sessions, models, skills and logs |
+
+> `127.0.0.1:8642` is the brain's internal connection for OpenClaw. It is not a web page.
+> The Hermes dashboard builds its pages on its first start, which takes a few minutes once.
+
+## 📱 Chat apps (Telegram & WhatsApp)
+
+Strangers who message your bot or number get a **pairing code**. Nobody can talk to MM Agent until you approve them. In group chats it only answers when @mentioned.
+
+### Telegram
+
+1. In Telegram, message **@BotFather**, send `/newbot` and copy the token it gives you.
+2. Start Menu → **Connect Telegram**, then paste the token.
+3. Start MM Agent and send your bot a message. It replies with a pairing code.
+4. Start Menu → **Approve Telegram**, then type the code. Codes expire after 1 hour.
+
+### WhatsApp
+
+1. Start Menu → **Connect WhatsApp**. The first time, it installs OpenClaw's WhatsApp plugin, then shows a QR code.
+2. On your phone: **WhatsApp → Settings → Linked devices → Link a device**, then scan the QR code.
+3. Start MM Agent. From **another phone**, message the linked number. It replies with a pairing code.
+4. Start Menu → **Approve WhatsApp**, then type the code.
+
+> ⚠️ WhatsApp is linked like WhatsApp Web, through an unofficial library. **Use a separate WhatsApp number if you can**: WhatsApp may restrict numbers it believes are automated. Telegram bots are official and have no such risk.
+
+## 🔒 Privacy & security
+
+- **API keys** are stored encrypted (Windows DPAPI) in `%USERPROFILE%\.mm-agent\keys.env`. Only your Windows account on your PC can decrypt them, and the folder is locked to your user. Keys are decrypted in memory only when MM Agent starts.
+- **Everything is local**: the brain and the chat interface listen on `127.0.0.1` only, so other computers can't reach them. A private random key protects the link between them.
+- **Your messages** go from your PC directly to the AI provider you chose, under that provider's terms.
+- **Don't type API keys into the Hermes dashboard**: it stores them unencrypted. Use **Enter API Keys** instead.
+- MM Agent installs per-user and **never needs administrator rights**.
+
+## 🗑 Uninstall
+
+Windows **Settings → Apps → MM Agent → Uninstall**. This removes MM Agent's shortcuts and scripts.
+Hermes Agent, OpenClaw and your encrypted keys are kept, so you can reinstall without setting up again. To remove them too, delete:
+`%LOCALAPPDATA%\hermes`, `%LOCALAPPDATA%\OpenClaw`, `%USERPROFILE%\.openclaw` and `%USERPROFILE%\.mm-agent`.
+
+## 🛠 Troubleshooting
+
+**First, run Start Menu → MM Agent Setup.** It checks and repairs Node.js, Hermes, OpenClaw and the link between them. Its first lines show where everything is installed; include a screenshot of them when you ask for help.
+
+<details>
+<summary><b>Known problems and fixes</b> (click to open)</summary>
+
+| Message | Cause and fix |
+|---|---|
+| `OpenClaw did not install` / `'openclaw' is not recognized` | OpenClaw's folder is missing from PATH. **MM Agent Setup** finds it and fixes PATH, or reinstalls it. |
+| `os error 448` / `untrusted mount point` | Windows' **RedirectionGuard** was on (Inno Setup 6.7 turns it on and it is passed to everything the installer starts). Fixed since 1.0.4: the installer turns it off, and setup/start reopen themselves in a normal window if needed. |
+| `uv trampoline failed to spawn Python child process` | Hermes' private Python is missing (cut-short install, or antivirus). **MM Agent Setup** re-runs the Hermes installer. If it still fails, setup lists the MISSING file; restore it in Windows Security → Protection history. |
+| `requested interpreter resolved to Python 3.11 ... incompatible with ==3.14.*` | A Hermes update stopped halfway. **MM Agent Setup** detects it and finishes the update (1–10 minutes). |
+| `Replacement credential saved but inactive` | OpenClaw 2026.10.6+ answers a repeat link this way. Setup skips re-linking; if the key really changed, **Start MM Agent** activates the new sign-in. |
+| `OutOfMemoryException` reading `.env` | Hermes' settings file grew huge after damage. Setup rebuilds it from its valid lines and keeps the damaged copy as `.env.mm-corrupt.<date>`. |
+| `A gateway is already running` | An old brain was still running. Start replaces it automatically. |
+| Hermes dashboard doesn't open | The chat page still works. Run **MM Agent Setup** to repair Hermes, then start again. |
+| "Windows protected your PC" | The installer isn't code-signed. Click **More info → Run anyway**. |
+
+Useful checks:
+- `hermes doctor`: checks Hermes and tests your keys.
+- `openclaw gateway status`: checks the chat interface.
+- http://127.0.0.1:8642/health should show `{"status": "ok"}` while MM Agent runs.
+- Logs are in `%LOCALAPPDATA%\Programs\MM Agent\logs`. Check them for keys before sharing; the scripts never write keys there, but it's good practice.
+
+</details>
+
+## 🏗 Build from source
+
+MM Agent itself is a set of PowerShell scripts plus an [Inno Setup](https://jrsoftware.org/isinfo.php) installer.
+
+```powershell
+# 1. Install the installer compiler (once)
+winget install --id JRSoftware.InnoSetup -e --scope user
+
+# 2. (Optional) rebuild the icon from installer\mmagent-source.jpg
+powershell -ExecutionPolicy Bypass -File installer\make-icon.ps1
+
+# 3. Build dist\MM-Agent-Setup.exe
+powershell -ExecutionPolicy Bypass -File installer\build-installer.ps1
+```
+
+<details>
+<summary><b>Project structure</b></summary>
+
+```
+MM Agent/
+├─ *.cmd                    Double-click launchers (also the Start Menu shortcuts)
+├─ scripts/
+│  ├─ common.ps1            Shared settings and helpers
+│  ├─ first-run.ps1         Setup wizard: install, repair, keys, linking, chat apps
+│  ├─ install-node.ps1      Latest Node.js (per-user, checksum-verified)
+│  ├─ install-hermes.ps1    Official Hermes Agent installer
+│  ├─ install-openclaw.ps1  Official OpenClaw installer
+│  ├─ setup-bridge.ps1      Links OpenClaw to Hermes' local API
+│  ├─ enter-api-keys.ps1    Encrypted key entry (DPAPI)
+│  ├─ switch-model.ps1      Choose provider and model
+│  ├─ start.ps1 / stop.ps1  Run MM Agent
+│  ├─ connect-telegram.ps1, connect-whatsapp.ps1, approve-chat.ps1
+├─ installer/
+│  ├─ MM-Agent.iss          Inno Setup script
+│  ├─ build-installer.ps1   Builds dist\MM-Agent-Setup.exe
+│  ├─ make-icon.ps1         Builds mmagent.ico from mmagent-source.jpg
+└─ dist/                    Build output (not in git; published on Releases)
+```
+
+</details>
+
+## 🙏 Credits
+
+MM Agent is free and stands on the shoulders of these open-source projects. It downloads them from their official sources during setup and does not include or change their code:
+
+- [Hermes Agent](https://github.com/nousresearch/hermes-agent) by Nous Research (MIT)
+- [OpenClaw](https://github.com/openclaw/openclaw) by the OpenClaw Foundation (MIT)
+- [Node.js](https://nodejs.org) (MIT)
+- [Inno Setup](https://jrsoftware.org/isinfo.php) by Jordan Russell and Martijn Laan, used to build the installer
+
+MM Agent is an independent community project and is not affiliated with or endorsed by Nous Research, the OpenClaw Foundation, OpenAI, Anthropic, DeepSeek, Moonshot AI, Telegram or WhatsApp.
+
+## 📄 License
+
+MM Agent is released under the [MIT License](LICENSE): free to use, copy, change and share.
+You pay only your AI provider for the API usage you choose.

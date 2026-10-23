@@ -1,0 +1,18 @@
+# Never publish these: they can contain personal data (bot names, paths, PIDs).
+logs/
+
+# Build output: the installer is published on the Releases page, not in git.
+dist/
+*.exe
+*.7z
+*.zip
+
+# Settings backups made by the scripts.
+*.mm-backup.*
+*.mm-corrupt.*
+
+# Editor / OS clutter
+.vs/
+.vscode/
+Thumbs.db
+desktop.ini
