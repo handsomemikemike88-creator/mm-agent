@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+- When OpenClaw updates itself and stops with "uses schema version N ... run openclaw doctor --fix",
+  Start now backs up OpenClaw's databases, runs `openclaw doctor --fix`, and starts the interface again.
+
 ## 1.1.0
 - **WhatsApp support**: Connect WhatsApp (QR code, like WhatsApp Web) and Approve WhatsApp in the Start Menu.
 - Setup now offers to connect Telegram and/or WhatsApp after the API keys (optional).

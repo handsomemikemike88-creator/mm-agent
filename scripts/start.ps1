@@ -81,7 +81,20 @@ if (Test-Port $MM.InterfacePort) {
 } else {
     Write-Host "[..] Starting interface (OpenClaw) ..."
     $p = Start-Part 'Interface (OpenClaw)' 'openclaw gateway run' 'interface'
-    Wait-Ready { Test-Port $MM.InterfacePort } 'Interface' 300 'interface' $p
+    try {
+        Wait-Ready { Test-Port $MM.InterfacePort } 'Interface' 300 'interface' $p
+    } catch {
+        # OpenClaw updated itself and asks for a database upgrade: do it once, then start again.
+        $log = Join-Path $MM.LogDir 'interface.log'
+        if (-not (Select-String -Path $log -Pattern 'openclaw doctor --fix' -Quiet -ErrorAction SilentlyContinue)) { throw }
+        Write-Host "[..] OpenClaw was updated and must upgrade its database first." -ForegroundColor Cyan
+        Write-Host "     Running OpenClaw's repair (openclaw doctor --fix). This can take 5-15 minutes; leave this window open." -ForegroundColor Cyan
+        $code = Repair-OpenClawState
+        if ($code -ne 0) { throw "OpenClaw's repair failed (exit $code). Log: $(Join-Path $MM.LogDir 'openclaw-doctor.log')" }
+        Write-Host "[OK] OpenClaw repaired. Starting the interface again ..."
+        $p = Start-Part 'Interface (OpenClaw)' 'openclaw gateway run' 'interface'
+        Wait-Ready { Test-Port $MM.InterfacePort } 'Interface' 300 'interface' $p
+    }
     Write-Host "[OK] Interface ready"
 }
 

@@ -139,6 +139,7 @@ Hermes Agent, OpenClaw and your encrypted keys are kept, so you can reinstall wi
 | `requested interpreter resolved to Python 3.11 ... incompatible with ==3.14.*` | A Hermes update stopped halfway. **MM Agent Setup** detects it and finishes the update (1–10 minutes). |
 | `Replacement credential saved but inactive` | OpenClaw 2026.10.6+ answers a repeat link this way. Setup skips re-linking; if the key really changed, **Start MM Agent** activates the new sign-in. |
 | `OutOfMemoryException` reading `.env` | Hermes' settings file grew huge after damage. Setup rebuilds it from its valid lines and keeps the damaged copy as `.env.mm-corrupt.<date>`. |
+| `uses schema version N ... run openclaw doctor --fix` (interface won't start) | OpenClaw updated itself and must upgrade its database once. Since 1.1.1, **Start MM Agent** backs up the databases (in `%USERPROFILE%\.openclaw\backups`), runs `openclaw doctor --fix` and starts again. This can take 5–15 minutes. |
 | `A gateway is already running` | An old brain was still running. Start replaces it automatically. |
 | Hermes dashboard doesn't open | The chat page still works. Run **MM Agent Setup** to repair Hermes, then start again. |
 | "Windows protected your PC" | The installer isn't code-signed. Click **More info → Run anyway**. |

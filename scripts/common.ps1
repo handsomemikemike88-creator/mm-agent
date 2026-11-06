@@ -379,6 +379,29 @@ function Invoke-WithProgress {
     return $p.ExitCode
 }
 
+# After OpenClaw updates itself, its databases may need a one-time upgrade: the gateway then stops
+# with "... uses schema version N; ... run openclaw doctor --fix". Back up the databases (3 newest
+# backups kept) and run OpenClaw's own safe repair. Returns doctor's exit code.
+function Repair-OpenClawState {
+    $root = Join-Path $HOME '.openclaw'
+    $backups = Join-Path $root 'backups'
+    $dest = Join-Path $backups "mm-before-doctor-$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+    New-Item -ItemType Directory -Force $dest | Out-Null
+    Get-ChildItem (Join-Path $root 'agents') -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+        $db = Join-Path $_.FullName 'agent'
+        if (Test-Path $db) {
+            $to = New-Item -ItemType Directory -Force (Join-Path $dest $_.Name)
+            Copy-Item (Join-Path $db 'openclaw-agent.sqlite*') $to -ErrorAction SilentlyContinue
+        }
+    }
+    Copy-Item (Join-Path $root 'state\openclaw.sqlite*') $dest -ErrorAction SilentlyContinue
+    Get-ChildItem $backups -Directory -Filter 'mm-before-doctor-*' | Sort-Object Name -Descending |
+        Select-Object -Skip 3 | Remove-Item -Recurse -Force
+    Write-Host "     databases backed up to $dest" -ForegroundColor DarkGray
+    return (Invoke-WithProgress -Exe (Resolve-OpenClaw) -Arguments @('doctor', '--fix', '--non-interactive') `
+        -Label 'openclaw-doctor' -TimeoutSec 1800 -Quiet)
+}
+
 # Keep a dated copy of a settings file (only the 5 newest are kept). Files over 1 MB are not
 # copied: a settings file that big is damaged, and Read-HermesEnvLines keeps that copy itself.
 function Backup-File([string]$Path) {
