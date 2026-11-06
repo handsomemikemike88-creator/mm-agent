@@ -9,11 +9,15 @@ $PidFile = Join-Path $MM.LogDir 'pids.txt'
 # update ends it), so the chat never loses its brain. Stop MM Agent closes the window and the loop.
 function Start-Part([string]$Title, [string]$Command, [string]$Log, [switch]$KeepAlive) {
     $logFile = "$($MM.LogDir)\$Log.log"
+    # Hermes/OpenClaw print normal progress on stderr; Windows PowerShell 5.1 would show each of those
+    # lines as a red "NativeCommandError". Turning every line into plain text avoids the false alarm.
+    # (ToString() rather than "$_": inner double quotes are stripped on the way into the new window.)
+    $plain = "$Command 2>&1 | ForEach-Object { `$_.ToString() }"
     $run = if ($KeepAlive) {
-        "Remove-Item '$logFile' -ErrorAction SilentlyContinue; while (`$true) { $Command *>&1 | Tee-Object -Append -FilePath '$logFile'; " +
+        "Remove-Item '$logFile' -ErrorAction SilentlyContinue; while (`$true) { $plain | Tee-Object -Append -FilePath '$logFile'; " +
         "Write-Host '[$($MM.Name)] $Title stopped - restarting in 10 seconds (close this window to stop it)'; Start-Sleep -Seconds 10 }"
     } else {
-        "$Command *>&1 | Tee-Object -FilePath '$logFile'"
+        "$plain | Tee-Object -FilePath '$logFile'"
     }
     # Work from the user's home folder, so the AI's file tools never act inside MM Agent's own files.
     $proc = Start-Process powershell -PassThru -WindowStyle Minimized -WorkingDirectory $HOME -ArgumentList @(

@@ -140,6 +140,7 @@ Hermes Agent, OpenClaw and your encrypted keys are kept, so you can reinstall wi
 | `Replacement credential saved but inactive` | OpenClaw 2026.10.6+ answers a repeat link this way. Setup skips re-linking; if the key really changed, **Start MM Agent** activates the new sign-in. |
 | `OutOfMemoryException` reading `.env` | Hermes' settings file grew huge after damage. Setup rebuilds it from its valid lines and keeps the damaged copy as `.env.mm-corrupt.<date>`. |
 | `uses schema version N ... run openclaw doctor --fix` (interface won't start) | OpenClaw updated itself and must upgrade its database once. Since 1.1.1, **Start MM Agent** backs up the databases (in `%USERPROFILE%\.openclaw\backups`), runs `openclaw doctor --fix` and starts again. This can take 5–15 minutes. |
+| Red `NativeCommandError` around a normal message (e.g. `Installing TUI dependencies…`) | Not an error: Windows PowerShell shows messages from a program's error channel in red. Since 1.1.3 MM Agent shows them as plain text. Look for a real failure message (e.g. `failed`, `did not start`) instead. |
 | "Unable to finish this reply: Couldn't connect to the AI service" | The brain (Hermes) had stopped. Since 1.1.2 it restarts itself within seconds; otherwise use **Stop MM Agent** then **Start MM Agent**. |
 | Replies are slow | Use **Switch Model** → DeepSeek `deepseek-v4-flash` (the default since 1.1.2), and keep OpenClaw's thinking level low or off. |
 | `A gateway is already running` | An old brain was still running. Start replaces it automatically. |

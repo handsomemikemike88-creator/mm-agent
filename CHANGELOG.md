@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.3
+- No more false red errors: normal progress messages from Hermes and OpenClaw (e.g. "Installing TUI dependencies…"
+  after the Hermes dashboard builds) were shown by Windows PowerShell as red "NativeCommandError" blocks.
+  MM Agent's windows and logs now show them as plain text.
+
 ## 1.1.2
 - **Faster replies (about 2.5x: 11.8 s -> 4.7 s for a short question)**: DeepSeek now defaults to `deepseek-v4-flash`,
   Hermes reasoning to "low", and OpenClaw only relays (minimal tools, no workspace files, thinking off),
