@@ -23,7 +23,8 @@ $MM.BrainUrl = "http://127.0.0.1:$($MM.BrainPort)/v1"
 
 # The four model providers MM Agent supports (Hermes provider id -> key + default model).
 $Providers = [ordered]@{
-    deepseek  = @{ Label = 'DeepSeek';           KeyVar = 'DEEPSEEK_API_KEY';  Model = 'deepseek-v4-pro' }
+    # v4-flash answers about twice as fast as v4-pro; pick pro in Switch Model for harder work.
+    deepseek  = @{ Label = 'DeepSeek';           KeyVar = 'DEEPSEEK_API_KEY';  Model = 'deepseek-v4-flash' }
     openai    = @{ Label = 'OpenAI';             KeyVar = 'OPENAI_API_KEY';    Model = 'gpt-5.5';          HermesId = 'openai-api' }
     anthropic = @{ Label = 'Anthropic (Claude)'; KeyVar = 'ANTHROPIC_API_KEY'; Model = 'claude-sonnet-5-5' }
     kimi      = @{ Label = 'Kimi (Moonshot)';    KeyVar = 'KIMI_API_KEY';      Model = 'kimi-k2.6';        HermesId = 'kimi-coding' }

@@ -5,11 +5,20 @@ New-Item -ItemType Directory -Force $MM.LogDir | Out-Null
 $PidFile = Join-Path $MM.LogDir 'pids.txt'
 
 # Open a minimized window running $Command, logging to logs\<Log>.log.
-function Start-Part([string]$Title, [string]$Command, [string]$Log) {
+# -KeepAlive: run it again whenever it stops (e.g. Hermes' dashboard "Restart Gateway" or a Hermes
+# update ends it), so the chat never loses its brain. Stop MM Agent closes the window and the loop.
+function Start-Part([string]$Title, [string]$Command, [string]$Log, [switch]$KeepAlive) {
+    $logFile = "$($MM.LogDir)\$Log.log"
+    $run = if ($KeepAlive) {
+        "Remove-Item '$logFile' -ErrorAction SilentlyContinue; while (`$true) { $Command *>&1 | Tee-Object -Append -FilePath '$logFile'; " +
+        "Write-Host '[$($MM.Name)] $Title stopped - restarting in 10 seconds (close this window to stop it)'; Start-Sleep -Seconds 10 }"
+    } else {
+        "$Command *>&1 | Tee-Object -FilePath '$logFile'"
+    }
     # Work from the user's home folder, so the AI's file tools never act inside MM Agent's own files.
     $proc = Start-Process powershell -PassThru -WindowStyle Minimized -WorkingDirectory $HOME -ArgumentList @(
         '-NoProfile', '-Command',
-        "`$host.UI.RawUI.WindowTitle='$($MM.Name) - $Title'; $Command *>&1 | Tee-Object -FilePath '$($MM.LogDir)\$Log.log'"
+        "`$host.UI.RawUI.WindowTitle='$($MM.Name) - $Title'; $run"
     )
     Add-Content $PidFile $proc.Id
     return $proc
@@ -55,7 +64,7 @@ if (Test-Brain) {
     }
     Write-Host "[..] Starting brain (Hermes) ..."
     # --replace: take over from a leftover gateway (e.g. from an earlier, failed start).
-    $p = Start-Part 'Brain (Hermes)' 'hermes gateway run --replace' 'brain'
+    $p = Start-Part 'Brain (Hermes)' 'hermes gateway run --replace' 'brain' -KeepAlive
     Wait-Ready { Test-Brain } 'Brain' 300 'brain' $p
     Write-Host "[OK] Brain ready"
 }

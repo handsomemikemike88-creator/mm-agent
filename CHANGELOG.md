@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.2
+- **Faster replies (about 2.5x: 11.8 s -> 4.7 s for a short question)**: DeepSeek now defaults to `deepseek-v4-flash`,
+  Hermes reasoning to "low", and OpenClaw only relays (minimal tools, no workspace files, thinking off),
+  cutting its instructions per message from ~47,600 to ~20,600 tokens. Pick `deepseek-v4-pro` in Switch Model for harder work.
+- **The brain restarts itself**: if Hermes stops (e.g. "Restart Gateway" or an update in the Hermes dashboard),
+  MM Agent starts it again within seconds instead of leaving the chat with "Couldn't connect to the AI service".
+
 ## 1.1.1
 - When OpenClaw updates itself and stops with "uses schema version N ... run openclaw doctor --fix",
   Start now backs up OpenClaw's databases, runs `openclaw doctor --fix`, and starts the interface again.

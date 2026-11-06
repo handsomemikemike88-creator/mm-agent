@@ -80,6 +80,27 @@ if ($linked -and -not $newKey) {
 # Agent answers can be long; the onboarding default of 4096 is too small.
 $ErrorActionPreference = 'Continue'     # OpenClaw prints harmless warnings on stderr
 & $openclaw config set "models.providers.$($MM.BrainProvider).models[0].maxTokens" 16384 --strict-json 2>$null | Out-Null
+
+# Speed: Hermes does the thinking and uses its own tools, so OpenClaw only relays. Without this,
+# OpenClaw sends ~47k tokens of its own tool descriptions and workspace files with every message
+# (measured: 11.8 s -> 4.7 s per reply together with deepseek-v4-flash and low reasoning).
+$slim = @{
+    tools  = @{ profile = 'minimal' }
+    agents = @{ defaults = @{ contextInjection = 'never'; thinkingDefault = 'off' } }
+} | ConvertTo-Json -Depth 6
+$slimFile = Join-Path $env:TEMP 'mm-slim.patch.json'
+[IO.File]::WriteAllText($slimFile, $slim, (New-Object Text.UTF8Encoding $false))
+& $openclaw config patch --file $slimFile 2>$null | Out-Null
+Remove-Item $slimFile
 $ErrorActionPreference = 'Stop'
+
+# Hermes' "medium" reasoning makes every reply think first; "low" is much quicker for chat.
+$effort = ((Get-Content $MM.HermesConfig -ErrorAction SilentlyContinue | Select-String '^\s*reasoning_effort:\s*(\S*)' | Select-Object -First 1).Matches.Groups[1].Value)
+if (-not $effort -or $effort -eq 'medium') {
+    $ErrorActionPreference = 'Continue'
+    & hermes config set agent.reasoning_effort low 2>$null | Out-Null
+    $ErrorActionPreference = 'Stop'
+}
+Write-Host "[OK] Fast replies: OpenClaw relays lightly, Hermes reasoning '$(if ($effort -and $effort -ne 'medium') { $effort } else { 'low' })'"
 Write-Host "[OK] OpenClaw now uses '$($MM.BrainProvider)/$($MM.BrainModel)' (Hermes) as its model"
 if (-not $SkipModel) { Write-Host "Setup complete. Next: run Enter-API-Keys.cmd, then Start-MM-Agent.cmd" -ForegroundColor Green }
