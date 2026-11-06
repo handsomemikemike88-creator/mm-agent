@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.4
+- **Starts automatically when you sign in to Windows** (installer option, on by default). Setup is only ever needed once:
+  after a restart MM Agent comes up by itself in the background - chat page, Telegram and WhatsApp keep working -
+  without opening browser pages. Progress is written to `logs\autostart.log`.
+
 ## 1.1.3
 - No more false red errors: normal progress messages from Hermes and OpenClaw (e.g. "Installing TUI dependencies…"
   after the Hermes dashboard builds) were shown by Windows PowerShell as red "NativeCommandError" blocks.

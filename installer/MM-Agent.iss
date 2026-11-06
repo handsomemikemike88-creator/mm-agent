@@ -4,7 +4,7 @@
 ; Build:  ISCC.exe MM-Agent.iss   ->  ..\dist\MM-Agent-Setup.exe
 
 #define AppName "MM Agent"
-#define AppVersion "1.1.3"
+#define AppVersion "1.1.4"
 ; Rooster icon, built from mmagent-source.jpg by make-icon.ps1.
 #define AppIcon "mmagent.ico"
 
@@ -39,6 +39,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a desktop shortcut to start MM Agent"; GroupDescription: "Shortcuts:"
+Name: "autostart"; Description: "Start MM Agent automatically when I sign in to Windows (no setup needed again)"; GroupDescription: "Startup:"
 
 [InstallDelete]
 ; Replaced by approve-chat.ps1 in 1.1.0.
@@ -67,6 +68,10 @@ Name: "{group}\MM Agent Setup"; Filename: "{app}\Run-Setup.cmd"; WorkingDir: "{a
 Name: "{group}\Read Me"; Filename: "{app}\README.md"
 Name: "{group}\Uninstall MM Agent"; Filename: "{uninstallexe}"; IconFilename: "{app}\{#AppIcon}"
 Name: "{autodesktop}\MM Agent"; Filename: "{app}\Start-MM-Agent.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"; Tasks: desktopicon
+; Windows sign-in: start quietly in the background (no browser pages). Removed again on uninstall.
+Name: "{userstartup}\MM Agent"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; \
+  Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\scripts\start.ps1"" -Background"; \
+  WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"; Comment: "Starts MM Agent in the background"; Tasks: autostart
 
 [Run]
 Filename: "powershell.exe"; \

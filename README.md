@@ -80,6 +80,14 @@ Everything is in **Start Menu → MM Agent**:
 | **Approve Telegram / Approve WhatsApp** | Allow a person who messaged your bot |
 | **MM Agent Setup** | Re-run setup: updates and repairs everything |
 
+### After a restart
+
+Setup is only needed **once**. MM Agent starts **automatically when you sign in to Windows**, quietly in the background,
+so Telegram and WhatsApp keep answering and the chat page is ready at http://127.0.0.1:18789/.
+Open it from your browser's bookmarks or with **Start MM Agent**, which also opens both pages.
+To turn auto-start off, run the installer again and untick **"Start MM Agent automatically when I sign in to Windows"**,
+or delete **MM Agent** from the Startup folder (press Win+R, type `shell:startup`).
+
 When MM Agent is running, two pages are available:
 
 | Page | Address | Use it for |

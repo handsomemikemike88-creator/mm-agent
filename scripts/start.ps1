@@ -1,8 +1,15 @@
 # Start MM Agent: Hermes brain, OpenClaw interface and Hermes dashboard, then open both web pages.
+# -Background: used by the Windows sign-in (Startup) shortcut - starts everything quietly, opens no
+# browser pages, and writes its progress to logs\autostart.log.
+param([switch]$Background)
 . "$PSScriptRoot\common.ps1"
 Update-Path
 New-Item -ItemType Directory -Force $MM.LogDir | Out-Null
 $PidFile = Join-Path $MM.LogDir 'pids.txt'
+if ($Background) {
+    Start-Transcript -Path (Join-Path $MM.LogDir 'autostart.log') -Force | Out-Null
+    Start-Sleep -Seconds 20     # let Windows finish signing in and the network come up
+}
 
 # Open a minimized window running $Command, logging to logs\<Log>.log.
 # -KeepAlive: run it again whenever it stops (e.g. Hermes' dashboard "Restart Gateway" or a Hermes
@@ -118,6 +125,13 @@ if (Test-Port $MM.DashboardPort) {
 } else {
     Write-Host "[..] Starting Hermes dashboard (the first start builds its web pages: a few minutes) ..."
     $dashProc = Start-Part 'Hermes dashboard' "hermes dashboard --no-open --port $($MM.DashboardPort)" 'hermes-dashboard'
+}
+
+if ($Background) {
+    # Started at Windows sign-in: everything runs, but no browser pages pop up.
+    Write-Host "[OK] $($MM.Name) started in the background. Chat: http://127.0.0.1:$($MM.InterfacePort)/"
+    Stop-Transcript | Out-Null
+    return
 }
 
 Write-Host "[..] Opening the OpenClaw chat page ..."
