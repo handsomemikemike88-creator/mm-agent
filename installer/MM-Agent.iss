@@ -4,7 +4,7 @@
 ; Build:  ISCC.exe MM-Agent.iss   ->  ..\dist\MM-Agent-Setup.exe
 
 #define AppName "MM Agent"
-#define AppVersion "1.1.4"
+#define AppVersion "1.1.5"
 ; Rooster icon, built from mmagent-source.jpg by make-icon.ps1.
 #define AppIcon "mmagent.ico"
 
@@ -40,6 +40,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "Create a desktop shortcut to start MM Agent"; GroupDescription: "Shortcuts:"
 Name: "autostart"; Description: "Start MM Agent automatically when I sign in to Windows (no setup needed again)"; GroupDescription: "Startup:"
+Name: "autoupdate"; Description: "Update Hermes Agent, OpenClaw and Node.js automatically every day"; GroupDescription: "Startup:"
 
 [InstallDelete]
 ; Replaced by approve-chat.ps1 in 1.1.0.
@@ -64,6 +65,7 @@ Name: "{group}\Connect Telegram"; Filename: "{app}\Connect-Telegram.cmd"; Workin
 Name: "{group}\Approve Telegram"; Filename: "{app}\Approve-Telegram.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"
 Name: "{group}\Connect WhatsApp"; Filename: "{app}\Connect-WhatsApp.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"
 Name: "{group}\Approve WhatsApp"; Filename: "{app}\Approve-WhatsApp.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"
+Name: "{group}\Update MM Agent"; Filename: "{app}\Update-MM-Agent.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"
 Name: "{group}\MM Agent Setup"; Filename: "{app}\Run-Setup.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"
 Name: "{group}\Read Me"; Filename: "{app}\README.md"
 Name: "{group}\Uninstall MM Agent"; Filename: "{uninstallexe}"; IconFilename: "{app}\{#AppIcon}"
@@ -74,6 +76,13 @@ Name: "{userstartup}\MM Agent"; Filename: "{sys}\WindowsPowerShell\v1.0\powershe
   WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"; Comment: "Starts MM Agent in the background"; Tasks: autostart
 
 [Run]
+; Daily update task (04:00, for PCs left on). Restarted PCs are updated at sign-in by start.ps1.
+Filename: "powershell.exe"; \
+  Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\scripts\daily-update-task.ps1"""; \
+  Flags: runhidden; StatusMsg: "Adding the daily update..."; Tasks: autoupdate
+Filename: "powershell.exe"; \
+  Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\scripts\daily-update-task.ps1"" -Remove"; \
+  Flags: runhidden; Tasks: not autoupdate
 Filename: "powershell.exe"; \
   Parameters: "-NoProfile -ExecutionPolicy Bypass -NoExit -File ""{app}\scripts\first-run.ps1"""; \
   WorkingDir: "{app}"; \
@@ -84,6 +93,9 @@ Filename: "powershell.exe"; \
 Filename: "powershell.exe"; \
   Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\scripts\stop.ps1"""; \
   Flags: runhidden; RunOnceId: "StopMMAgent"
+Filename: "powershell.exe"; \
+  Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\scripts\daily-update-task.ps1"" -Remove"; \
+  Flags: runhidden; RunOnceId: "RemoveMMAgentUpdateTask"
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\logs"

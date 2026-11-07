@@ -78,6 +78,7 @@ Everything is in **Start Menu → MM Agent**:
 | **Switch Model** | Choose which AI answers (DeepSeek, OpenAI, Anthropic, Kimi) |
 | **Connect Telegram / Connect WhatsApp** | Link a chat app |
 | **Approve Telegram / Approve WhatsApp** | Allow a person who messaged your bot |
+| **Update MM Agent** | Update Hermes Agent, OpenClaw and Node.js now (it also happens by itself every day) |
 | **MM Agent Setup** | Re-run setup: updates and repairs everything |
 
 ### After a restart
@@ -87,6 +88,20 @@ so Telegram and WhatsApp keep answering and the chat page is ready at http://127
 Open it from your browser's bookmarks or with **Start MM Agent**, which also opens both pages.
 To turn auto-start off, run the installer again and untick **"Start MM Agent automatically when I sign in to Windows"**,
 or delete **MM Agent** from the Startup folder (press Win+R, type `shell:startup`).
+
+### Automatic updates
+
+MM Agent keeps **Hermes Agent, OpenClaw and Node.js up to date by itself**, once a day:
+- **at Windows sign-in**, before it starts (only the first sign-in of the day), and
+- **every day at 04:00** for PCs that stay switched on (Task Scheduler task "MM Agent Daily Update").
+  MM Agent stops for a few minutes, updates, and starts again.
+
+Your API keys, chats and settings are kept. If an update fails, MM Agent still starts with the old version and tries again
+next time. Progress is written to `logs\update.log`. To update right now, use **Update MM Agent** in the Start Menu.
+To turn automatic updates off, run the installer again and untick **"Update Hermes Agent, OpenClaw and Node.js automatically every day"**.
+
+> **Don't use `/update` in Telegram/WhatsApp or OpenClaw's own updater.** OpenClaw can only replace its files while it is
+> stopped, so updating from inside the running chat always fails with `gateway-stop-unverified`. MM Agent's updater stops it first.
 
 When MM Agent is running, two pages are available:
 
@@ -151,6 +166,7 @@ Hermes Agent, OpenClaw and your encrypted keys are kept, so you can reinstall wi
 | Red `NativeCommandError` around a normal message (e.g. `Installing TUI dependencies…`) | Not an error: Windows PowerShell shows messages from a program's error channel in red. Since 1.1.3 MM Agent shows them as plain text. Look for a real failure message (e.g. `failed`, `did not start`) instead. |
 | "Unable to finish this reply: Couldn't connect to the AI service" | The brain (Hermes) had stopped. Since 1.1.2 it restarts itself within seconds; otherwise use **Stop MM Agent** then **Start MM Agent**. |
 | Replies are slow | Use **Switch Model** → DeepSeek `deepseek-v4-flash` (the default since 1.1.2), and keep OpenClaw's thinking level low or off. |
+| `OpenClaw update failed: gateway-stop-unverified` (e.g. after `/update` in WhatsApp) | OpenClaw cannot update itself while it is running. Nothing broke. Since 1.1.5 MM Agent updates it every day by itself; to update now use **Update MM Agent**. |
 | `A gateway is already running` | An old brain was still running. Start replaces it automatically. |
 | Hermes dashboard doesn't open | The chat page still works. Run **MM Agent Setup** to repair Hermes, then start again. |
 | "Windows protected your PC" | The installer isn't code-signed. Click **More info → Run anyway**. |

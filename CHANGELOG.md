@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.5
+- **Automatic daily updates of Hermes Agent, OpenClaw and Node.js** (installer option, on by default): at the first
+  Windows sign-in of the day, and every day at 04:00 for PCs left on (Task Scheduler task "MM Agent Daily Update").
+  MM Agent stops, updates, and starts again by itself. A failed update never stops MM Agent from starting; it is tried
+  again next time. Progress is written to `logs\update.log`.
+- New Start Menu shortcut **Update MM Agent** to update right now.
+- Fixes OpenClaw updates failing with `gateway-stop-unverified` (e.g. `/update` from WhatsApp): OpenClaw can't replace its
+  files while running, so MM Agent's updater stops it first (and falls back to npm if OpenClaw's own updater refuses).
+- A Hermes update that stops halfway is repaired automatically with the official installer.
+
 ## 1.1.4
 - **Starts automatically when you sign in to Windows** (installer option, on by default). Setup is only ever needed once:
   after a restart MM Agent comes up by itself in the background - chat page, Telegram and WhatsApp keep working -

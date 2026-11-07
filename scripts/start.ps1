@@ -1,14 +1,30 @@
 # Start MM Agent: Hermes brain, OpenClaw interface and Hermes dashboard, then open both web pages.
 # -Background: used by the Windows sign-in (Startup) shortcut - starts everything quietly, opens no
-# browser pages, and writes its progress to logs\autostart.log.
-param([switch]$Background)
+# browser pages, and writes its progress to logs\autostart.log. It first runs the daily update
+# (update-all.ps1, at most once a day) unless -NoUpdate is given.
+param([switch]$Background, [switch]$NoUpdate)
 . "$PSScriptRoot\common.ps1"
 Update-Path
 New-Item -ItemType Directory -Force $MM.LogDir | Out-Null
 $PidFile = Join-Path $MM.LogDir 'pids.txt'
 if ($Background) {
+    if (-not $NoUpdate) {
+        Start-Sleep -Seconds 20     # let Windows finish signing in and the network come up
+        # Daily update of Node.js, OpenClaw and Hermes (skipped if it already ran today).
+        # A failed update never stops MM Agent from starting. Only when the installer's
+        # "update automatically" option is on (it adds the daily task).
+        if (Get-ScheduledTask -TaskName 'MM Agent Daily Update' -ErrorAction SilentlyContinue) {
+            try { & "$PSScriptRoot\update-all.ps1" -NoStart } catch { Write-Host "[!] Update failed: $_" }
+        }
+        # If the daily task is updating right now, wait for it (it starts MM Agent itself afterwards).
+        $lock = Join-Path $MM.LogDir 'update.lock'
+        $waited = 0
+        while ((Test-Path $lock) -and ((Get-Item $lock).LastWriteTime -gt (Get-Date).AddHours(-2)) -and $waited -lt 2700) {
+            Start-Sleep -Seconds 15; $waited += 15
+        }
+        Update-Path
+    }
     Start-Transcript -Path (Join-Path $MM.LogDir 'autostart.log') -Force | Out-Null
-    Start-Sleep -Seconds 20     # let Windows finish signing in and the network come up
 }
 
 # Open a minimized window running $Command, logging to logs\<Log>.log.
