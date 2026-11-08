@@ -1,0 +1,16 @@
+{
+  "id": "mm-course-info",
+  "name": "MM Agent course info",
+  "description": "Adds the course documents and customer-service rules to every MM Agent chat (read-only, no tools).",
+  "activation": {
+    "onStartup": true
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "courseDir": { "type": "string", "description": "Folder with the course documents (.md/.txt). Default: ~/.openclaw/workspace/rag/corpus" },
+      "agents": { "type": "array", "items": { "type": "string" }, "description": "Agents that get the course info. Default: [\"mm-agent\"]" }
+    }
+  }
+}

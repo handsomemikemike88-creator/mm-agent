@@ -78,6 +78,7 @@ Everything is in **Start Menu → MM Agent**:
 | **Switch Model** | Choose which AI answers (DeepSeek, OpenAI, Anthropic, Kimi) |
 | **Connect Telegram / Connect WhatsApp** | Link a chat app |
 | **Approve Telegram / Approve WhatsApp** | Allow a person who messaged your bot |
+| **Voice Messages** | Understand voice notes and answer them with voice (WhatsApp/Telegram) |
 | **Update MM Agent** | Update Hermes Agent, OpenClaw and Node.js now (it also happens by itself every day) |
 | **MM Agent Setup** | Re-run setup: updates and repairs everything |
 
@@ -113,6 +114,15 @@ When MM Agent is running, two pages are available:
 > `127.0.0.1:8642` is the brain's internal connection for OpenClaw. It is not a web page.
 > The Hermes dashboard builds its pages on its first start, which takes a few minutes once.
 
+## 🎓 Course questions
+
+MM Agent answers clients' course questions from your course documents. The **mm-course-info** plugin (read-only, no tools) gives every chat:
+- every `.md` / `.txt` file in `%USERPROFILE%\.openclaw\workspace\rag\corpus` (sections whose heading says *內部備註* / *internal note* are left out), and
+- the customer-service rules: answer only from the documents, in the client's language; a fixed polite reply when something isn't covered; never recommend other courses; never reveal the model, keys, files or links.
+
+To change course details, edit or add files in that folder: the next reply uses them. To change the rules, copy
+`openclaw-plugin\mm-course-info\rules.md` (in the MM Agent folder) to `%USERPROFILE%\.openclaw\mm-course-rules.md` and edit that copy.
+
 ## 📱 Chat apps (Telegram & WhatsApp)
 
 Strangers who message your bot or number get a **pairing code**. Nobody can talk to MM Agent until you approve them. In group chats it only answers when @mentioned.
@@ -131,6 +141,23 @@ Strangers who message your bot or number get a **pairing code**. Nobody can talk
 3. Start MM Agent. From **another phone**, message the linked number. It replies with a pairing code.
 4. Start Menu → **Approve WhatsApp**, then type the code.
 
+### 🎙 Voice messages
+
+Start Menu → **Voice Messages** (setup also offers it). Then:
+- **Voice notes are understood** in any language (Cantonese, English, Mandarin, ...). They are turned into text **on your PC**
+  with [whisper.cpp](https://github.com/ggml-org/whisper.cpp): free, no API key, the audio never leaves your computer.
+  With an NVIDIA graphics card this takes about 1 second; on the processor alone it takes longer.
+- **A voice note gets a voice note back** (plus the text), in Microsoft's free voices: Cantonese for Chinese replies,
+  English for English. Typed messages still get text only.
+
+| Want | Do |
+|---|---|
+| Voice reply to every message | `Setup-Voice-Messages.cmd -Reply always` |
+| Understand voice, but reply with text only | `Setup-Voice-Messages.cmd -Reply off` |
+| Mandarin voice instead of Cantonese | set `"chinese": "mandarin"` in `%LOCALAPPDATA%\MM Agent Voice\voice.json` |
+
+It downloads about 0.6 GB once (1.3 GB with an NVIDIA card) into `%LOCALAPPDATA%\MM Agent Voice`.
+
 > ⚠️ WhatsApp is linked like WhatsApp Web, through an unofficial library. **Use a separate WhatsApp number if you can**: WhatsApp may restrict numbers it believes are automated. Telegram bots are official and have no such risk.
 
 ## 🔒 Privacy & security
@@ -138,6 +165,8 @@ Strangers who message your bot or number get a **pairing code**. Nobody can talk
 - **API keys** are stored encrypted (Windows DPAPI) in `%USERPROFILE%\.mm-agent\keys.env`. Only your Windows account on your PC can decrypt them, and the folder is locked to your user. Keys are decrypted in memory only when MM Agent starts.
 - **Everything is local**: the brain and the chat interface listen on `127.0.0.1` only, so other computers can't reach them. A private random key protects the link between them.
 - **Your messages** go from your PC directly to the AI provider you chose, under that provider's terms.
+- **Chat apps can't control your PC**: messages from WhatsApp, Telegram and the chat page get no brain tools (no terminal, files, code, browser, memory or cross-chat search). Only the Hermes dashboard on your PC has them. Keep it that way if strangers can message your number.
+- **Voice messages**: voice notes are transcribed on your PC. For voice *replies*, the reply text is sent to Microsoft's free speech service to make the audio.
 - **Don't type API keys into the Hermes dashboard**: it stores them unencrypted. Use **Enter API Keys** instead.
 - MM Agent installs per-user and **never needs administrator rights**.
 
@@ -166,6 +195,8 @@ Hermes Agent, OpenClaw and your encrypted keys are kept, so you can reinstall wi
 | Red `NativeCommandError` around a normal message (e.g. `Installing TUI dependencies…`) | Not an error: Windows PowerShell shows messages from a program's error channel in red. Since 1.1.3 MM Agent shows them as plain text. Look for a real failure message (e.g. `failed`, `did not start`) instead. |
 | "Unable to finish this reply: Couldn't connect to the AI service" | The brain (Hermes) had stopped. Since 1.1.2 it restarts itself within seconds; otherwise use **Stop MM Agent** then **Start MM Agent**. |
 | Replies are slow | Use **Switch Model** → DeepSeek `deepseek-v4-flash` (the default since 1.1.2), and keep OpenClaw's thinking level low or off. |
+| Every reply is "OpenClaw couldn't finish this reply" (`unknown_execution` in `logs\brain.log`) | The brain restarted in the middle of a reply and Hermes blocked that conversation. Since 1.1.6 the brain healer clears it within a minute; to do it by hand: `hermes sessions discard <session> --yes`. |
+| Replies contain `<\|DSML\| calls>` / `invoke name=...` text | The brain was told about tools it can't use. Since 1.1.6 setup sets `compat.supportsTools: false` on the brain model; run **MM Agent Setup** once. |
 | `OpenClaw update failed: gateway-stop-unverified` (e.g. after `/update` in WhatsApp) | OpenClaw cannot update itself while it is running. Nothing broke. Since 1.1.5 MM Agent updates it every day by itself; to update now use **Update MM Agent**. |
 | `A gateway is already running` | An old brain was still running. Start replaces it automatically. |
 | Hermes dashboard doesn't open | The chat page still works. Run **MM Agent Setup** to repair Hermes, then start again. |

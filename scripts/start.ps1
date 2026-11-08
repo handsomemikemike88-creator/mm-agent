@@ -96,6 +96,14 @@ if (Test-Brain) {
     Write-Host "[OK] Brain ready"
 }
 
+# Brain healer: clears conversations Hermes blocked after a restart mid-reply ("unknown_execution").
+$healerRunning = Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandLine -match 'brain-healer\.ps1' }
+if (-not $healerRunning) {
+    Start-Part 'Brain healer' "powershell -NoProfile -ExecutionPolicy Bypass -File '$PSScriptRoot\brain-healer.ps1'" 'brain-healer' | Out-Null
+    Write-Host "[OK] Brain healer running"
+}
+
 # A sign-in that setup saved "inactive" (bridge key changed) can only be activated while the
 # brain is running, so do it now, before OpenClaw starts.
 $pendingFile = Join-Path $MM.LogDir 'openclaw-pending-signin.txt'
@@ -116,19 +124,22 @@ if (Test-Port $MM.InterfacePort) {
     Write-Host "[OK] Interface (OpenClaw) already running"
 } else {
     Write-Host "[..] Starting interface (OpenClaw) ..."
-    $p = Start-Part 'Interface (OpenClaw)' 'openclaw gateway run' 'interface'
+    # -KeepAlive: if OpenClaw stops (crash, or something ends it), it is started again within seconds,
+    # so WhatsApp/Telegram never stay without an answer.
+    $p = Start-Part 'Interface (OpenClaw)' 'openclaw gateway run' 'interface' -KeepAlive
     try {
         Wait-Ready { Test-Port $MM.InterfacePort } 'Interface' 300 'interface' $p
     } catch {
         # OpenClaw updated itself and asks for a database upgrade: do it once, then start again.
         $log = Join-Path $MM.LogDir 'interface.log'
         if (-not (Select-String -Path $log -Pattern 'openclaw doctor --fix' -Quiet -ErrorAction SilentlyContinue)) { throw }
+        & taskkill /PID $p.Id /T /F 2>$null | Out-Null    # stop the restart loop while the database is upgraded
         Write-Host "[..] OpenClaw was updated and must upgrade its database first." -ForegroundColor Cyan
         Write-Host "     Running OpenClaw's repair (openclaw doctor --fix). This can take 5-15 minutes; leave this window open." -ForegroundColor Cyan
         $code = Repair-OpenClawState
         if ($code -ne 0) { throw "OpenClaw's repair failed (exit $code). Log: $(Join-Path $MM.LogDir 'openclaw-doctor.log')" }
         Write-Host "[OK] OpenClaw repaired. Starting the interface again ..."
-        $p = Start-Part 'Interface (OpenClaw)' 'openclaw gateway run' 'interface'
+        $p = Start-Part 'Interface (OpenClaw)' 'openclaw gateway run' 'interface' -KeepAlive
         Wait-Ready { Test-Port $MM.InterfacePort } 'Interface' 300 'interface' $p
     }
     Write-Host "[OK] Interface ready"

@@ -1,0 +1,18 @@
+{
+  "name": "mm-course-info",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MM Agent: course documents and customer-service rules for every chat (read-only, no tools).",
+  "type": "module",
+  "main": "./index.js",
+  "openclaw": {
+    "extensions": ["./index.js"],
+    "runtimeExtensions": ["./index.js"]
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.11.0"
+  },
+  "peerDependenciesMeta": {
+    "openclaw": { "optional": true }
+  }
+}

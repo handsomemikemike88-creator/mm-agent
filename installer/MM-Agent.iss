@@ -4,7 +4,7 @@
 ; Build:  ISCC.exe MM-Agent.iss   ->  ..\dist\MM-Agent-Setup.exe
 
 #define AppName "MM Agent"
-#define AppVersion "1.1.5"
+#define AppVersion "1.1.6"
 ; Rooster icon, built from mmagent-source.jpg by make-icon.ps1.
 #define AppIcon "mmagent.ico"
 
@@ -48,6 +48,8 @@ Type: files; Name: "{app}\scripts\approve-telegram.ps1"
 
 [Files]
 Source: "..\scripts\*.ps1"; DestDir: "{app}\scripts"; Flags: ignoreversion
+Source: "..\scripts\*.mjs"; DestDir: "{app}\scripts"; Flags: ignoreversion
+Source: "..\openclaw-plugin\mm-course-info\*"; DestDir: "{app}\openclaw-plugin\mm-course-info"; Flags: ignoreversion
 Source: "..\*.cmd"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion isreadme
 Source: "{#AppIcon}"; DestDir: "{app}"; Flags: ignoreversion
@@ -65,6 +67,7 @@ Name: "{group}\Connect Telegram"; Filename: "{app}\Connect-Telegram.cmd"; Workin
 Name: "{group}\Approve Telegram"; Filename: "{app}\Approve-Telegram.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"
 Name: "{group}\Connect WhatsApp"; Filename: "{app}\Connect-WhatsApp.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"
 Name: "{group}\Approve WhatsApp"; Filename: "{app}\Approve-WhatsApp.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"
+Name: "{group}\Voice Messages"; Filename: "{app}\Setup-Voice-Messages.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"
 Name: "{group}\Update MM Agent"; Filename: "{app}\Update-MM-Agent.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"
 Name: "{group}\MM Agent Setup"; Filename: "{app}\Run-Setup.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppIcon}"
 Name: "{group}\Read Me"; Filename: "{app}\README.md"

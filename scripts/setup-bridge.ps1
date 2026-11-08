@@ -80,6 +80,9 @@ if ($linked -and -not $newKey) {
 # Agent answers can be long; the onboarding default of 4096 is too small.
 $ErrorActionPreference = 'Continue'     # OpenClaw prints harmless warnings on stderr
 & $openclaw config set "models.providers.$($MM.BrainProvider).models[0].maxTokens" 16384 --strict-json 2>$null | Out-Null
+# OpenClaw sends no tools to the brain: chat apps get no tools (see below), and when the brain is told
+# about tools it cannot use, DeepSeek writes its raw tool-call markup ("<|DSML| calls>") into the reply.
+& $openclaw config set "models.providers.$($MM.BrainProvider).models[0].compat.supportsTools" false --strict-json 2>$null | Out-Null
 
 # Speed: Hermes does the thinking and uses its own tools, so OpenClaw only relays. Without this,
 # OpenClaw sends ~47k tokens of its own tool descriptions and workspace files with every message
@@ -102,5 +105,36 @@ if (-not $effort -or $effort -eq 'medium') {
     $ErrorActionPreference = 'Stop'
 }
 Write-Host "[OK] Fast replies: OpenClaw relays lightly, Hermes reasoning '$(if ($effort -and $effort -ne 'medium') { $effort } else { 'low' })'"
+
+# Safety: everything from chat apps (WhatsApp, Telegram, the chat page) reaches Hermes through its API
+# server. Hermes would give those chats its FULL tools (terminal, files, code, browser, memory, search
+# across all chats), so anyone who can message the number could make this PC run commands or read
+# another client's chat. Chat apps get no Hermes tools; the Hermes dashboard keeps its own tools.
+# Only set when the user has not chosen a list themselves.
+$hasApiList = Select-String -Path $MM.HermesConfig -Pattern '^\s+api_server:' -Quiet -ErrorAction SilentlyContinue
+if (-not $hasApiList) {
+    $ErrorActionPreference = 'Continue'
+    & hermes config set platform_toolsets.api_server '[]' 2>$null | Out-Null
+    $ErrorActionPreference = 'Stop'
+}
+Write-Host "[OK] Chat apps can't use the brain's PC tools (terminal, files, ...)"
+
+# Course info: the mm-course-info plugin adds the course documents (~\.openclaw\workspace\rag\corpus)
+# and the customer-service rules to every chat. Read-only, no tools.
+$coursePlugin = Join-Path (Split-Path $PSScriptRoot -Parent) 'openclaw-plugin\mm-course-info'
+if (Test-Path (Join-Path $coursePlugin 'index.js')) {
+    $ErrorActionPreference = 'Continue'
+    & $openclaw plugins install --link $coursePlugin --force 2>$null | Out-Null
+    $cfgNow = Get-Content (Join-Path $HOME '.openclaw\openclaw.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $allowList = @($cfgNow.plugins.allow | Where-Object { $_ })
+    $pluginPatch = @{ plugins = @{ entries = @{ 'mm-course-info' = @{ enabled = $true; hooks = @{ allowConversationAccess = $true; allowPromptInjection = $true } } } } }
+    if ($allowList.Count -gt 0 -and $allowList -notcontains 'mm-course-info') { $pluginPatch.plugins.allow = @($allowList + 'mm-course-info') }
+    $pluginFile = Join-Path $env:TEMP 'mm-course-plugin.patch.json'
+    [IO.File]::WriteAllText($pluginFile, ($pluginPatch | ConvertTo-Json -Depth 8), (New-Object Text.UTF8Encoding $false))
+    & $openclaw config patch --file $pluginFile 2>$null | Out-Null
+    Remove-Item $pluginFile -ErrorAction SilentlyContinue
+    $ErrorActionPreference = 'Stop'
+    Write-Host "[OK] Course info plugin on (course files: $(Join-Path $HOME '.openclaw\workspace\rag\corpus'))"
+}
 Write-Host "[OK] OpenClaw now uses '$($MM.BrainProvider)/$($MM.BrainModel)' (Hermes) as its model"
 if (-not $SkipModel) { Write-Host "Setup complete. Next: run Enter-API-Keys.cmd, then Start-MM-Agent.cmd" -ForegroundColor Green }

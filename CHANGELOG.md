@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.1.6
+- **Voice messages** on WhatsApp and Telegram (Start Menu -> **Voice Messages**, also offered during setup):
+  - MM Agent now **understands voice notes** in any language (Cantonese, English, Mandarin, ...). They are turned into text
+    on this PC with whisper.cpp + Whisper large-v3-turbo: free, no API key, the audio never leaves the PC. With an NVIDIA
+    graphics card a voice note takes about 1 second (CUDA build); otherwise the processor is used.
+    Chinese comes out in Traditional characters with Cantonese words, as used in Hong Kong.
+  - A voice note is **answered with a voice note** (plus the text). Microsoft's free voices, chosen from the reply's
+    language: Cantonese (zh-HK) for Chinese, English for English, also Japanese and Korean. Set `"chinese": "mandarin"`
+    in `%LOCALAPPDATA%\MM Agent Voice\voice.json` for a Mandarin voice.
+  - `Setup-Voice-Messages.cmd -Reply always` answers every message with voice; `-Reply off` keeps answers as text.
+  - Voice notes on WhatsApp need ffmpeg in `C:\Program Files\ffmpeg` (OpenClaw only trusts system folders), so
+    the voice setup installs it there once; Windows asks for permission.
+- **Fixed: every chat reply failing with "OpenClaw couldn't finish this reply"** after the brain restarted in the middle
+  of a reply (e.g. the daily update). Newer Hermes blocks such a conversation (`unknown_execution`) until the lost turn
+  is acknowledged. A new **brain healer** (started with MM Agent) checks every minute and clears it with Hermes' own
+  `hermes sessions discard`, so conversations recover by themselves. Log: `logs\brain-healer.log`.
+- **Security: chat apps no longer get the brain's PC tools.** Every chat (WhatsApp, Telegram, chat page) reaches Hermes
+  through its API server, which gave it full tools: terminal, files, code, browser, memory and search across all chats.
+  Anyone who could message the number could make the PC run commands or read another client's chat. Setup now sets
+  `platform_toolsets.api_server: []` (unless you chose a list yourself); the Hermes dashboard keeps its tools.
+- **The interface (OpenClaw) restarts itself** if it stops, like the brain already did.
+- **Fixed: replies full of `<|DSML| calls>` text.** OpenClaw told the brain about tools it could not use, so DeepSeek
+  wrote its raw tool-call markup into the chat. The brain model is now marked `compat.supportsTools: false`, so no
+  tool descriptions are sent and replies are plain text.
+- **Course answers** (new OpenClaw plugin `mm-course-info`, read-only, no tools): every chat gets the course documents
+  from `%USERPROFILE%\.openclaw\workspace\rag\corpus` (`.md`/`.txt`, sections marked as internal notes left out) and
+  customer-service rules (`openclaw-plugin\mm-course-info\rules.md`): answer only from the documents, in the client's
+  language; a fixed polite reply when something is not in them; never recommend other courses; never reveal model,
+  keys, files or links. Edit or add course files and the next reply uses them.
+
 ## 1.1.5
 - **Automatic daily updates of Hermes Agent, OpenClaw and Node.js** (installer option, on by default): at the first
   Windows sign-in of the day, and every day at 04:00 for PCs left on (Task Scheduler task "MM Agent Daily Update").

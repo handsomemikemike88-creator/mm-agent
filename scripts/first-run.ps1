@@ -97,6 +97,19 @@ foreach ($app in $chatApps) {
     catch { Write-Host "[!] $app was not connected: $($_.Exception.Message). Try again later from the Start Menu." -ForegroundColor Yellow }
 }
 
+# Optional: voice messages (understand voice notes, answer with voice). Already set up -> keep it current.
+$voiceCfg = Join-Path $env:LOCALAPPDATA 'MM Agent Voice\voice.json'
+$doVoice = Test-Path $voiceCfg
+if (-not $doVoice -and $chatApps) {
+    Write-Host "`nTurn on voice messages? MM Agent then understands voice notes (Cantonese, English, Mandarin, ...)" -ForegroundColor Cyan
+    Write-Host "and answers a voice note with a voice note. Free, runs on this PC; downloads 0.6-1.3 GB once."
+    $doVoice = (Read-Host 'Voice messages (Y/n)') -notmatch '^[nN]'
+}
+if ($doVoice) {
+    try { & "$PSScriptRoot\install-voice.ps1" }
+    catch { Write-Host "[!] Voice messages were not set up: $($_.Exception.Message). Try again later: Start Menu -> Voice Messages." -ForegroundColor Yellow }
+}
+
 Write-Host "`nSetup complete." -ForegroundColor Green
 if ($chatApps) {
     Write-Host "After MM Agent starts, message your bot/number, then approve yourself with Approve Telegram / Approve WhatsApp in the Start Menu." -ForegroundColor Cyan
