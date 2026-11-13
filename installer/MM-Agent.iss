@@ -4,7 +4,7 @@
 ; Build:  ISCC.exe MM-Agent.iss   ->  ..\dist\MM-Agent-Setup.exe
 
 #define AppName "MM Agent"
-#define AppVersion "1.1.6"
+#define AppVersion "1.1.7"
 ; Rooster icon, built from mmagent-source.jpg by make-icon.ps1.
 #define AppIcon "mmagent.ico"
 

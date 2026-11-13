@@ -80,6 +80,36 @@ $n = Import-Keys
 if ($n -eq 0) { Write-Host "[!] No API keys saved - run Enter-API-Keys.cmd" -ForegroundColor Yellow }
 else { Write-Host "[OK] Loaded $n encrypted API key(s)" }
 
+# MM Agent starts and watches Hermes and OpenClaw itself. Their own autostarts (OpenClaw's
+# "OpenClaw Gateway" login item, e.g. after 'openclaw gateway install' or 'openclaw doctor --fix',
+# and Hermes' "Hermes_Gateway" task, added by some Hermes updates) start a second copy that takes
+# the port, after which MM Agent's copy restarts in a loop and the two keep replacing each other.
+# Turn those off (moved/disabled, not deleted) and stop a copy they already started.
+function Disable-OtherAutostarts {
+    $parked = Join-Path $MM.LogDir 'disabled-autostarts'
+    $startup = [Environment]::GetFolderPath('Startup')
+    Get-ChildItem $startup -Filter 'OpenClaw Gateway*' -ErrorAction SilentlyContinue | ForEach-Object {
+        New-Item -ItemType Directory -Force $parked | Out-Null
+        Move-Item $_.FullName (Join-Path $parked $_.Name) -Force
+        Write-Host "[OK] Turned off OpenClaw's own autostart ($($_.Name)); MM Agent starts OpenClaw"
+    }
+    foreach ($task in 'OpenClaw Gateway', 'Hermes_Gateway') {
+        $t = Get-ScheduledTask -TaskName $task -ErrorAction SilentlyContinue
+        if ($t -and $t.State -ne 'Disabled') {
+            $t | Disable-ScheduledTask -ErrorAction SilentlyContinue | Out-Null
+            Write-Host "[OK] Turned off the task '$task'; MM Agent starts it instead"
+        }
+    }
+    $foreign = Get-CimInstance Win32_Process -Filter "Name='node.exe'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.CommandLine -match 'gateway .*--task-supervisor|service-child-windows-job-anchor' }
+    if ($foreign) {
+        $foreign | ForEach-Object { & taskkill /PID $_.ProcessId /T /F 2>&1 | Out-Null }
+        Write-Host "[OK] Stopped a second OpenClaw started outside MM Agent"
+        Start-Sleep -Seconds 3
+    }
+}
+try { Disable-OtherAutostarts } catch { Write-Host "[!] Could not check other autostarts: $_" -ForegroundColor Yellow }
+
 if (Test-Brain) {
     Write-Host "[OK] Brain (Hermes) already running"
 } else {

@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.7
+- **Fixed: MM Agent and a second copy of OpenClaw/Hermes fighting each other** (chats stop answering, `logs\interface.log`
+  full of "Another gateway ... already owns this state directory"). OpenClaw's own autostart (`OpenClaw Gateway` login
+  item or task, added by `openclaw gateway install` / `openclaw doctor --fix`) and Hermes' `Hermes_Gateway` task (added
+  by some Hermes updates) started their own copies, which took over the port while MM Agent kept restarting its own.
+  At every start MM Agent now turns those autostarts off (moved to `logs\disabled-autostarts` / task disabled, nothing
+  deleted) and stops a copy they already started. MM Agent alone starts and watches Hermes and OpenClaw.
+- **Shorter daily update:** OpenClaw is now updated with npm directly. OpenClaw's own updater spent about 8 minutes on
+  checks and then failed on most Windows PCs, so chats were down for about 20 minutes; now it is a few minutes.
+  OpenClaw's updater is still tried if npm fails.
+- **Fixed: the update ran again at every start** when Hermes reported "No newer release ... this checkout is newer";
+  that now counts as up to date.
+
 ## 1.1.6
 - **Voice messages** on WhatsApp and Telegram (Start Menu -> **Voice Messages**, also offered during setup):
   - MM Agent now **understands voice notes** in any language (Cantonese, English, Mandarin, ...). They are turned into text

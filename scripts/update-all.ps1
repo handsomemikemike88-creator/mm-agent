@@ -74,14 +74,16 @@ try {
         } elseif ($have -eq $latest) {
             Write-Host "[OK] OpenClaw $have is the newest version"
         } else {
-            Write-Host "[..] Updating OpenClaw $have -> $latest ..."
-            $code = Invoke-WithProgress -Exe $oc -Arguments @('update', '--yes', '--no-restart') -Label 'openclaw-update' -TimeoutSec 1800
+            # Straight to npm: OpenClaw's own updater ('openclaw update') spends ~8 minutes on safety checks and
+            # then fails on most Windows PCs (SQLite backup worker / C:\ permissions), keeping chats down longer.
+            # The gateway migrates its data itself on the next start.
+            Write-Host "[..] Updating OpenClaw $have -> $latest (npm) ..."
+            $npm = (Get-Command npm.cmd -ErrorAction SilentlyContinue).Source
+            $code = Invoke-WithProgress -Exe $npm -Arguments @('install', '-g', "openclaw@$latest") -Label 'openclaw-npm-update' -TimeoutSec 1800
             $now = ((& $oc --version 2>$null) -join ' ') -replace '^.*?(\d{4}\.\d+\.\d+\S*).*$', '$1'
             if ($now -ne $latest) {
-                # OpenClaw's own updater refused or failed: install the package directly with npm.
-                Write-Host "[..] OpenClaw's updater did not finish (exit $code); installing openclaw@$latest with npm ..."
-                $npm = (Get-Command npm.cmd -ErrorAction SilentlyContinue).Source
-                $code = Invoke-WithProgress -Exe $npm -Arguments @('install', '-g', "openclaw@$latest") -Label 'openclaw-npm-update' -TimeoutSec 1800
+                Write-Host "[..] npm did not finish (exit $code); trying OpenClaw's own updater ..."
+                $code = Invoke-WithProgress -Exe $oc -Arguments @('update', '--yes', '--no-restart') -Label 'openclaw-update' -TimeoutSec 1800
                 $now = ((& $oc --version 2>$null) -join ' ') -replace '^.*?(\d{4}\.\d+\.\d+\S*).*$', '$1'
             }
             if ($now -eq $latest) { Write-Host "[OK] OpenClaw updated to $now" -ForegroundColor Green }
@@ -106,7 +108,7 @@ try {
         }
         if ($reason) { Write-Host "[!] Hermes Agent needs repair: $reason" -ForegroundColor Red; $failed += 'Hermes Agent' }
         else { Write-Host "[OK] Hermes Agent updated: $((& hermes --version 2>$null) | Select-Object -First 1)" -ForegroundColor Green }
-    } elseif ($check -match '(?i)up to date|already') {
+    } elseif ($check -match '(?i)up to date|already|no newer release|checkout is newer') {
         Write-Host "[OK] Hermes Agent is the newest version"
     } else {
         Write-Host "[!] Could not check for a Hermes update:" -ForegroundColor Yellow
